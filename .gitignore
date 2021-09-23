@@ -135,5 +135,3 @@ dmypy.json
 #Pyvis
 *.html
 
-#Other stuff
-*__init__.py
