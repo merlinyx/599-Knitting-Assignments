@@ -56,3 +56,5 @@ This package contains the classes used to create a knit graph (Loop, Yarn, Knit_
 This package contains a visualizer method to help visualize simple knitgraphs. This may be useful to extend for debugging future projects
 It also contains a set of simple knitgraph which manually generate some simple textures. In future assignments we will make it easier to define more complex knit graphs. 2 of these textures need to be implemented for assignment 1
 
+### Assignment 1 submission readme
+The five images are in `./sample_results/hw1`. I fixed a couple of typos in the code (marked with #comment) and in the comments (unmarked).

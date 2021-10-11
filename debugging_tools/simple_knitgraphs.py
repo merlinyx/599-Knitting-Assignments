@@ -1,5 +1,5 @@
 """A set of functions that generate simple knit-graph structures useful for debugging"""
-from knit_graphs.Knit_Graph import Knit_Graph
+from knit_graphs.Knit_Graph import Knit_Graph, Pull_Direction
 from knit_graphs.Yarn import Yarn
 
 
@@ -45,8 +45,37 @@ def rib(width: int = 4, height: int = 4, rib_width: int = 1) -> Knit_Graph:
     assert width > 0
     assert height > 0
     assert rib_width <= width
-    # Todo Implement
-    raise NotImplementedError
+
+    knit_graph = Knit_Graph()
+    yarn = Yarn("yarn", knit_graph)
+    knit_graph.add_yarn(yarn)
+
+    # make the first set of loops on the bottom (0th) course
+    first_course = []
+    for _ in range(0, width):
+        loop_id, loop = yarn.add_loop_to_end()
+        first_course.append(loop_id)
+        knit_graph.add_loop(loop)
+
+    # make new course of loops and connect them to the last course in ribs
+    prior_course = first_course
+    for _ in range(1, height):
+        next_course = []
+        pd = Pull_Direction.BtF
+        idx = 0
+        for parent_id in reversed(prior_course):
+            child_id, child = yarn.add_loop_to_end()
+            next_course.append(child_id)
+            knit_graph.add_loop(child)
+            idx += 1
+            knit_graph.connect_loops(parent_id, child_id, pull_direction=pd)
+            # check when we should turn knits into purls or purls into knits
+            if idx == rib_width:
+                pd = Pull_Direction.opposite(pd)
+                idx = 0
+        prior_course = next_course
+
+    return knit_graph
 
 
 def seed(width: int = 4, height=4) -> Knit_Graph:
@@ -58,8 +87,32 @@ def seed(width: int = 4, height=4) -> Knit_Graph:
     """
     assert width > 0
     assert height > 0
-    # Todo Implement
-    raise NotImplementedError
+
+    knit_graph = Knit_Graph()
+    yarn = Yarn("yarn", knit_graph)
+    knit_graph.add_yarn(yarn)
+
+    # make the first set of loops on the bottom (0th) course
+    first_course = []
+    for _ in range(0, width):
+        loop_id, loop = yarn.add_loop_to_end()
+        first_course.append(loop_id)
+        knit_graph.add_loop(loop)
+
+    # make new course of loops and connect them to the last course in seeds
+    prior_course = first_course
+    pd = Pull_Direction.FtB if width % 2 == 1 else Pull_Direction.BtF
+    for _ in range(1, height):
+        next_course = []
+        for parent_id in reversed(prior_course):
+            child_id, child = yarn.add_loop_to_end()
+            next_course.append(child_id)
+            knit_graph.add_loop(child)
+            knit_graph.connect_loops(parent_id, child_id, pull_direction=pd)
+            pd = Pull_Direction.opposite(pd)
+        prior_course = next_course
+
+    return knit_graph
 
 
 def twisted_stripes(width: int = 4, height=5, left_twists: bool = True) -> Knit_Graph:
@@ -70,7 +123,7 @@ def twisted_stripes(width: int = 4, height=5, left_twists: bool = True) -> Knit_
     :return: A knitgraph with repeating pattern of twisted stitches surrounded by knit wales
     """
     knitGraph = Knit_Graph()
-    yarn = Yarn("yarn", knit_graph)
+    yarn = Yarn("yarn", knitGraph) # fixed typo: knit_graph to knitGraph
     knitGraph.add_yarn(yarn)
 
     # Add the first course of loops
@@ -85,7 +138,7 @@ def twisted_stripes(width: int = 4, height=5, left_twists: bool = True) -> Knit_
         adds a loop by knitting to the knitgraph
         :param parent_offset: Set the offset of the parent loop in the cable. offset = parent_index - child_index
         :param p_id: the parent loop's id
-        :param depth: the crossing- depth to knit at
+        :param depth: the crossing-depth to knit at
         """
         child_id, child = yarn.add_loop_to_end()
         next_course.append(child_id)
@@ -121,7 +174,7 @@ def twisted_stripes(width: int = 4, height=5, left_twists: bool = True) -> Knit_
 def lace(width: int = 4, height: int = 4):
     """
     :param width: the number of stitches of the swatch
-    :param height:  the number of courses of the swatch
+    :param height: the number of courses of the swatch
     :return: a knitgraph with k2togs and yarn-overs surrounded by knit wales
     """
     knitGraph = Knit_Graph()

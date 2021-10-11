@@ -53,14 +53,21 @@ class Yarn:
             it defaults to 1 more than last put on the knit Graph (CHANGE)
         :return: the loop_id added to the yarn, the loop added to the yarn
         """
-        # TODO: Implement
-        # If Loop Id is None generate a new id from provided loop or based on last id on this yarn
+        # If Loop Id is None generate a new id which is 1 more than last put on the knit Graph
+        if loop_id is None:
+            loop_id = self.knit_graph.last_loop_id + 1
         # If no loop is provided create one with loop id and twisted parameter
+        if loop is None:
+            loop = Loop(loop_id, self._yarn_id, is_twisted)
         # Add Loop Id as a node to the yarn_graph and add parameter keyed to it at "loop" to store the loop
+        self.yarn_graph.add_node(loop_id, loop=loop)
         # Add an edge between this loop and the loop before it on the yarn
+        if self.last_loop_id is not None:
+            self.yarn_graph.add_edge(self.last_loop_id, loop_id)
         # Update last_loop_id
+        self.last_loop_id = loop_id
         # Return the created loop's id and the loop
-        raise NotImplementedError
+        return loop_id, loop
 
     def __contains__(self, item: Union[int, Loop]) -> bool:
         """
