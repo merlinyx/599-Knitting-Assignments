@@ -54,7 +54,7 @@ class Knitout_Generator:
         :param course_number: the course identifier for comments only
         """
         carrier_set = [self._carrier]
-        loop_id_to_target_needle = self._do_xfers_for_row(loop_ids, direction)
+        loop_id_to_target_needle = self._do_xfers_for_row(loop_ids, direction)  # Todo: implement this first
         # Todo: Implement as follows
         #  collect the needles that need to be knitted and the loop_id being created on each needle
         #  build a "knit" carriage pass in the direction with the given carrier_set
@@ -127,14 +127,14 @@ class Knitout_Generator:
                 raise NotImplementedError
             else:  # decrease, the bottom parent loop in the stack will be on the target needle
                 loop = self._knit_graph.loops[loop_id]
+                target_needle = None  # re-assigned on first iteration to needle of first parent
                 for i, parent in enumerate(loop.parent_loops):
                     parent_needle = parent_loops_to_needles[parent.loop_id]
                     if i == 0:  # first parent in stack
-                        pull_direction = self._knit_graph.graph[parent.loop_id][loop_id]["pull_direction"]
-                        front_bed = pull_direction is Pull_Direction.BtF  # knit on front bed, purl on back bed
-                        target_needle = Needle(True, position=parent_needle.position)
-                        loop_id_to_target_needle[loop_id] = target_needle
+                        target_needle = parent_needle
+                    loop_id_to_target_needle[loop_id] = target_needle
                     offset = self._knit_graph.graph[parent.loop_id][loop_id]["parent_offset"]
+                    # Note, if the offset is wrong, this code will not work. Validate in KnitGraph
                     parents_to_offsets[parent.loop_id] = offset
                     decrease_offsets[parent.loop_id] = offset
 
@@ -143,42 +143,33 @@ class Knitout_Generator:
 
     def _do_decrease_transfers(self, parent_loops_to_needles: Dict[int, Needle], decrease_offsets: Dict[int, int]):
         """
-        From lace Transfer post https://textiles-lab.github.io/posts/2018/02/07/lace-transfers/:
-        Transfer all -1's from all blocks.
-        Return all -1's from all blocks to the front at an offset of -1.
-        Transfer all 1's from all blocks to the back.
-        Return all 1's from all blocks to the front at offset +1.
+        Based on the schoolbus algorithm.
+         Transfer all loops in decrease to the opposite side
+         Bring the loops back to their offset needle in the order of offsets from negative to positive offsets
+        Note that we are restricting our decreases to be offsets of 1 or -1 due to limitations of the machine.
+        This is not a completely general method and does not garuntee stacking order of our decreases
+        A more advanced method can be found at:
+        https://textiles-lab.github.io/posts/2018/02/07/lace-transfers/
+        This would requre some changes to the code structure and is not reccomended for assignment 2.
         :param parent_loops_to_needles: parent loops mapped to their current needle
         :param decrease_offsets: the offsets of parent loops to create decreases
         """
-        # To transfer a loop to stack it in a decrease move it from its current needle to the opposite bed to hold it
-        #  Then rack and transfer it back to the target needle
-        # We do this in two groups xfers for negative offset needles and positive offset needles
-        # Needle information needed for transfer instructions. Each xfer instruction takes a tuple of (None, Needle).
-        # None is a place holder for loops in other operations like knit and split
-        negative_xfer_to_holding_bed: Dict[Needle, Tuple[None, Needle]] = {}
-        negative_xfer_to_offset: Dict[Needle, Tuple[None, Needle]] = {}
-        positive_xfer_to_holding_bed: Dict[Needle, Tuple[None, Needle]] = {}
-        positive_xfer_to_offset: Dict[Needle, Tuple[None, Needle]] = {}
+        xfers_to_holding_bed: Dict[Needle, Tuple[None, Needle]] = {}
+        # key needles currently holding the loops to the opposite needle to hold them for offset-xfers
+        offset_to_xfers_to_target: Dict[int, Dict[Needle, Tuple[None, Needle]]] = {}
+        # key offset values (-N...0..N) to starting needles to their target needle
         for parent_id, parent_needle in parent_loops_to_needles.items():
-            if parent_id in decrease_offsets:
-                front_needle = Needle(is_front=True, position=parent_needle.position)
-                back_needle = front_needle.opposite()
-                offset = decrease_offsets[parent_id]
-                offset_needle = parent_needle.offset(offset)
-                holding_needle = parent_needle.opposite()
-                # Todo implement
-                #  Add the transfer information to the correct dictionary
-                #  If the parent needle and offset needle are on opposite beds, skip the holding transfer step
+            if parent_id in decrease_offsets:  # this loop is involved in a decrease
+                # todo: Implement
+                #  collect transfer data for moves from parent needle to oppostive bed
+                #  collect transfer data based on offset from holding needle to offset needle from parent
                 raise NotImplementedError
-        carriage_pass = Carriage_Pass(Instruction_Type.Xfer, None, negative_xfer_to_holding_bed, [], self._machine_state)
-        self._add_carriage_pass(carriage_pass, "decrease negative-offsets to back")
-        carriage_pass = Carriage_Pass(Instruction_Type.Xfer, None, negative_xfer_to_offset, [], self._machine_state)
-        self._add_carriage_pass(carriage_pass, "decrease negative-offsets to front")
-        carriage_pass = Carriage_Pass(Instruction_Type.Xfer, None, positive_xfer_to_holding_bed, [], self._machine_state)
-        self._add_carriage_pass(carriage_pass, "decrease positive-offsets to back")
-        carriage_pass = Carriage_Pass(Instruction_Type.Xfer, None, positive_xfer_to_offset, [], self._machine_state)
-        self._add_carriage_pass(carriage_pass, "decrease positive-offsets to front")
+        carriage_pass = Carriage_Pass(Instruction_Type.Xfer, None, xfers_to_holding_bed, [], self._machine_state)
+        self._add_carriage_pass(carriage_pass, "send loops to decrease to back")
+        for offset in sorted(offset_to_xfers_to_target.keys()):
+            offset_xfers = offset_to_xfers_to_target[offset]
+            carriage_pass = Carriage_Pass(Instruction_Type.Xfer, None, offset_xfers, [], self._machine_state)
+            self._add_carriage_pass(carriage_pass, f"stack decreases with offset {offset}")
 
     def _do_cable_transfers(self, parent_loops_to_needles: Dict[int, Needle], front_cable_offsets: Dict[int, int],
                             back_cable_offsets: Dict[int, int]):
