@@ -129,7 +129,7 @@ class Carriage_Pass:
         elif self.instruction_type.value == Instruction_Type.Drop.value:
             return drop(self.machine_state, needle, comment=comment)
         elif self.instruction_type.value == Instruction_Type.Xfer.value:
-            assert second_needle is not None, "Two needles needed to split"
+            assert second_needle is not None, "Two needles needed to transfer"
             return xfer(self.machine_state, needle, second_needle, comment=comment)
         elif self.instruction_type.value == Instruction_Type.Miss.value:
             return miss(self.direction, needle, self.carrier_set, comment=comment)

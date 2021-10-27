@@ -60,5 +60,10 @@ It also contains a set of simple knitgraph which manually generate some simple t
 This package contains a representation of a v-bed knitting machine and 'KnitoutGenerator' class to create knitout 
 instructions by manipulting that machine-state. Knitout operations are in the machine_operations file.
 
-## Assignment 1 submission readme
+## Assignment submission readmes
+
+### Assignment: Connecting Dots
 The five images are in `./sample_results/hw1`. I fixed a couple of typos in the code (marked with #comment) and in the comments (unmarked).
+
+### Assignment: KnitGraphs to Knitout
+The five knitout files are in `./sample_results/hw3`. I fixed a couple of typos in the comments and a couple of bugs in my hw1 code.

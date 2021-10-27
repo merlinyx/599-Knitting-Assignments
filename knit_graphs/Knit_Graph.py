@@ -96,8 +96,8 @@ class Knit_Graph:
         # A course of a knitted structure is a set of neighboring loops that do not involve loops on the prior course
         # The first course (starting with loop 0) is the 0th course
         # Note that not having a parent loop does not mean a loop is on course 0, consider yarn-overs
-        loop_ids_to_course = {0 : 0}
-        course_to_loop_ids = {0 : [0]}
+        loop_ids_to_course = {}
+        course_to_loop_ids = {}
 
         curr_course = 0
         curr_loop = 0

@@ -10,7 +10,7 @@ def stockinette(width: int = 4, height: int = 4) -> Knit_Graph:
     :return: a knitgraph of stockinette on one yarn of width stitches by height course
     """
     knitGraph = Knit_Graph()
-    yarn = Yarn("yarn", knitGraph, carrier_id=4)
+    yarn = Yarn("yarn", knitGraph, carrier_id=3)
     knitGraph.add_yarn(yarn)
     first_row = []
     for _ in range(0, width):
@@ -56,9 +56,9 @@ def rib(width: int = 4, height: int = 4, rib_width: int = 1) -> Knit_Graph:
 
     # make new course of loops and connect them to the last course in ribs
     prior_course = first_course
-    for _ in range(1, height):
+    pd = Pull_Direction.FtB
+    for row in range(1, height):
         next_course = []
-        pd = Pull_Direction.BtF
         idx = 0
         for parent_id in reversed(prior_course):
             child_id, child = yarn.add_loop_to_end()
@@ -71,6 +71,7 @@ def rib(width: int = 4, height: int = 4, rib_width: int = 1) -> Knit_Graph:
                 pd = Pull_Direction.opposite(pd)
                 idx = 0
         prior_course = next_course
+        pd = Pull_Direction.opposite(pd)
 
     return knit_graph
 
