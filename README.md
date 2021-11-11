@@ -66,4 +66,8 @@ instructions by manipulting that machine-state. Knitout operations are in the ma
 The five images are in `./sample_results/hw1`. I fixed a couple of typos in the code (marked with #comment) and in the comments (unmarked).
 
 ### Assignment: KnitGraphs to Knitout
-The five knitout files are in `./sample_results/hw3`. I fixed a couple of typos in the comments and a couple of bugs in my hw1 code.
+The five knitout files are in `./sample_results/hw3`. Running `python tests/test_knitgraph_to_knitout.py` can generate these files fresh. I fixed some typos in the comments/raw strings and a couple of bugs in my hw1 code.
+
+### Assignment: KnitSpeak to KnitOut
+The five images are in `./sample_results/hw4`. To match the test strings in the test file, I used all lowercases for the cable symbols instead
+of the capitalized version as in the original comments.

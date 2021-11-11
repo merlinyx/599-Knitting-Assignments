@@ -51,13 +51,15 @@ class Stitch_Definition:
 
     Attributes
     ----------
-    offset_to_parent_loops : integer
+    offset_to_parent_loops : list of integers
         a stack of offsets from child loop to parent loop in prior course.
-         Stack order implies stacking order of parent loops through child
+        Stack order implies stacking order of parent loops through child.
     pull_direction:
         the direction to pull the child loop through the parents
     cabling_depth:
         the depth of this stitch crossing over stitches.
+    child_loops: integer
+        the number of child loops.
     """
 
     def __init__(self, pull_direction: Pull_Direction = Pull_Direction.BtF, cabling_depth: int = 0,
